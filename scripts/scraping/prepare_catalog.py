@@ -86,7 +86,7 @@ def main():
     df["adaptive_irt_bool"] = df["adaptive_irt"].apply(yes_no_to_bool)
 
     df.to_excel(OUTPUT_FILE, index=False)
-    print(f"✅ Prepared catalog saved → {OUTPUT_FILE}")
+    print(f"Prepared catalog saved → {OUTPUT_FILE}")
 
 
 if __name__ == "__main__":
