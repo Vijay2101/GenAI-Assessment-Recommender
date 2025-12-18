@@ -3,7 +3,6 @@ import sys
 import os
 
 # PIPELINE STEPS
-
 STEPS = [
     ("Scraping SHL catalog", "scripts/scraping/scrape_catalog.py"),
     ("Enriching assessment pages", "scripts/scraping/enrich_shl_catalog.py"),
