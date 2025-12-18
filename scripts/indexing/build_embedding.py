@@ -87,7 +87,7 @@ def main():
     with open(METADATA_PATH, "wb") as f:
         pickle.dump(catalog, f)
 
-    print("✅ Catalog embeddings & FAISS index built successfully")
+    print("Catalog embeddings & FAISS index built successfully")
 
 
 if __name__ == "__main__":
