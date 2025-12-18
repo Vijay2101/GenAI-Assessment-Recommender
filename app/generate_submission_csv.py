@@ -56,5 +56,5 @@ with open(OUTPUT_CSV_PATH, "w", newline="", encoding="utf-8") as csvfile:
     writer.writeheader()
     writer.writerows(rows)
 
-print("\n✅ Submission CSV successfully created")
-print(f"📄 File location: {OUTPUT_CSV_PATH}")
+print("\nSubmission CSV successfully created")
+print(f"File location: {OUTPUT_CSV_PATH}")
