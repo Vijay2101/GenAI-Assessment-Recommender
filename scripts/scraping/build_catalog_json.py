@@ -32,7 +32,7 @@ def main():
     with open(OUTPUT_FILE, "w", encoding="utf-8") as f:
         json.dump(records, f, indent=2)
 
-    print(f"✅ Canonical JSON saved → {OUTPUT_FILE}")
+    print(f"Canonical JSON saved → {OUTPUT_FILE}")
 
 
 if __name__ == "__main__":
