@@ -4,7 +4,6 @@ import pandas as pd
 from recommender import recommend
 
 # PATH CONFIGURATION
-
 EXCEL_PATH = os.path.join(
      "data", "test", "SHL_testSet.xlsx"
 )
