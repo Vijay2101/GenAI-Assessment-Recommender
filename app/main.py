@@ -3,6 +3,7 @@ from app.schemas import RecommendResponse, RecommendedAssessment
 from app.recommender import recommend
 from fastapi.middleware.cors import CORSMiddleware
 from fastapi.responses import HTMLResponse
+import math
 
 app = FastAPI(title="SHL GenAI Assessment Recommender",
               description="""
@@ -34,13 +35,22 @@ def recommend_endpoint(payload: dict):
 
     formatted = []
     for r in results:
+        dur = r.get("duration_minutes")
+
+        # NaN-safe duration handling
+        duration = (
+            int(dur)
+            if isinstance(dur, (int, float)) and not math.isnan(dur)
+            else None
+        )
+
         formatted.append(
             RecommendedAssessment(
                 url=r["assessment_url"],
                 name=r["assessment_name"],
                 adaptive_support="Yes" if r.get("adaptive_irt") else "No",
                 description=r.get("description", ""),
-                duration=int(r["duration_minutes"]) if r.get("duration_minutes") else 0,
+                duration=duration,
                 remote_support="Yes" if r.get("remote_testing") else "No",
                 test_type=r.get("test_types", [])
             )
@@ -49,6 +59,7 @@ def recommend_endpoint(payload: dict):
     return {
         "recommended_assessments": formatted
     }
+
 
 
 @app.get("/health")
