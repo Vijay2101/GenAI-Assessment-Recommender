@@ -1,4 +1,4 @@
-from typing import List
+from typing import Optional,List
 from pydantic import BaseModel
 
 
@@ -7,7 +7,7 @@ class RecommendedAssessment(BaseModel):
     name: str
     adaptive_support: str
     description: str
-    duration: int
+    duration: Optional[int] = None
     remote_support: str
     test_type: List[str]
 
