@@ -9,6 +9,7 @@ app = FastAPI(title="SHL GenAI Assessment Recommender",
               description="""
 ##  Live Application
 **[Open Frontend UI](https://assessment-recommender-frontend.vercel.app/)**
+
 **[Open Frontend Github repo](https://github.com/Vijay2101/Assessment-Recommender-Frontend)**
 
 This API powers an AI-based (RAG) recommendation system that suggests relevant SHL assessments
