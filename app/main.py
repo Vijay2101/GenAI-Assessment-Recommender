@@ -7,11 +7,17 @@ import math
 
 app = FastAPI(title="SHL GenAI Assessment Recommender",
               description="""
-##  Live Application
-**[Open Frontend UI](https://assessment-recommender-frontend.vercel.app/)**
+#  Live Application
+### **🔗 [Open Frontend UI](https://assessment-recommender-frontend.vercel.app/)**
+### **🔗 [Open Frontend Github repo](https://github.com/Vijay2101/Assessment-Recommender-Frontend)**
+---
 
-**[Open Frontend Github repo](https://github.com/Vijay2101/Assessment-Recommender-Frontend)**
+### ❗❗ FINAL PREDICTION SUBMISSION ❗❗
+### **PLEASE USE THIS FILE AS THE FINAL PREDICTION SUBMISSION**
+### **🔗 [CLICK HERE FOR FINAL SUBMISSION CSV FILE](https://github.com/Vijay2101/GenAI-Assessment-Recommender/blob/main/submission/vijay_kumar.csv)**
+### **🔗 [CLICK HERE TO VIEW THE APPROACH DOCUMENT](https://github.com/Vijay2101/GenAI-Assessment-Recommender/blob/main/submission/SHL-GenAI-Assessment-Recommender.pdf)**
 
+---
 This API powers an AI-based (RAG) recommendation system that suggests relevant SHL assessments
 based on a given job role or hiring requirement.
 
