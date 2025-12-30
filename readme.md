@@ -1,205 +1,174 @@
 SHL-GenAI-Assessment-Recommender
 ================================
 
-A GenAI-powered Assessment Recommendation System that uses Retrieval-Augmented Generation (RAG) over SHL's product catalog to recommend the most relevant assessments for a given hiring query or job description.
-
-* * * * *
+A **GenAI-powered Assessment Recommendation System** that uses **Retrieval-Augmented Generation (RAG)** over SHL’s public product catalog to recommend the most relevant **SHL Individual Test Solutions** for a given hiring query or job description.
 
 Overview
 --------
 
-This project builds an end-to-end recommendation pipeline that:
+This project implements an **end-to-end recommendation pipeline** that:
 
--   Scrapes and processes SHL's public product catalog
-
--   Indexes assessments using vector embeddings
-
--   Understands user intent using a large language model
-
--   Retrieves, ranks, and balances assessment recommendations
-
--   Exposes a production-ready API for querying recommendations
-
--   Generates submission-ready evaluation files aligned with SHL's automated scoring pipeline
-
-
-* * * * *
+*   Collects and preprocesses SHL’s public product catalog
+    
+*   Builds reusable retrieval artifacts (FAISS index + metadata)
+    
+*   Understands hiring intent using a Large Language Model
+    
+*   Retrieves and reranks relevant assessments using a hybrid strategy
+    
+*   Exposes a production-ready API for querying recommendations
+    
+*   Generates submission-ready CSV files aligned with SHL’s evaluation format
+    
 
 System Architecture
 -------------------
 
-**Pipeline Stages:**
+### Pipeline Stages
 
-1.  **Data Scraping**
+#### 1\. Data Collection
 
-    -   Scrapes SHL product catalog listing pages
+*   Programmatic extraction of SHL product catalog using **BeautifulSoup**
+    
+*   Retains only **Individual Test Solutions**
+    
+*   Extracts:
+    
+    *   assessment name and URL
+        
+    *   test type codes
+        
+    *   remote testing and adaptive (IRT) indicators
+        
 
-    -   Extracts assessment metadata (name, URL, test types, flags)
+#### 2\. Data Processing & Normalization
 
-    -   Visits individual product pages to extract descriptions, job levels, languages, and duration
+*   Cleans and standardizes text fields
+    
+*   Converts assessment duration to numeric minutes
+    
+*   Maps test-type codes to canonical SHL categories
+    
+*   Produces a **canonical JSON dataset**
+    
 
-2.  **Data Processing & Normalization**
+#### 3\. Embedding & Indexing (Offline)
 
-    -   Cleans and standardizes text fields
+*   Generates embeddings using **Gemini gemini-embedding-001**
+    
+*   Indexes embeddings using **FAISS (cosine similarity)**
+    
+*   Stores catalog metadata separately for efficient retrieval
+    
 
-    -   Maps test-type codes to canonical SHL categories
+#### 4\. Query Understanding (LLM)
 
-    -   Extracts numeric durations
+*   Uses **Gemini gemini-2.5-flash-lite**
+    
+*   Extracts structured intent:
+    
+    *   required test types
+        
+    *   duration constraints
+        
+    *   skills and soft skills
+        
+    *   job seniority (if present)
+        
 
-    -   Converts data into a canonical JSON format
+#### 5\. Retrieval & Ranking
 
-3.  **Embedding & Indexing**
+*   **Hybrid retrieval**:
+    
+    *   FAISS for semantic similarity
+        
+    *   BM25 for exact keyword matching
+        
+*   Candidates are reranked using **Gemini gemini-2.5-flash**
+    
+*   Ranking prioritizes:
+    
+    *   test-type alignment
+        
+    *   role relevance
+        
+    *   duration and job-level constraints
+        
 
-    -   Uses `gemini-embedding-001` for document embeddings
+API Layer
+---------
 
-    -   Stores normalized embeddings in a FAISS index
-
-    -   Metadata stored separately for efficient retrieval
-
-4.  **Query Understanding (LLM)**
-
-    -   Uses `gemini-2.5-flash` with structured JSON outputs
-
-    -   Extracts:
-
-        -   Required test types
-
-        -   Duration constraints
-
-        -   Skills and soft skills
-
-        -   Job seniority (if present)
-
-5.  **Retrieval & Ranking**
-
-    -   Vector similarity search (FAISS) to retrieve top-K candidates
-
-    -   Soft scoring based on:
-
-        -   Test type alignment
-
-        -   Duration proximity
-
-        -   Job-level relevance
-
-    -   Balanced ranking across required test types
-
-
-6.  **API Layer**
-
-    -   FastAPI backend
-
-    -   JSON-based recommendation responses
-
-    -   Health check endpoint for deployment validation
-
-* * * * *
-
-Tech Stack
-----------
-
--   **Backend:** FastAPI
-
--   **LLMs:** Google Gemini (genai SDK)
-
--   **Embeddings:** `gemini-embedding-001`
-
--   **Vector Store:** FAISS
-
--   **Scraping:** Requests, BeautifulSoup
-
--   **Data Processing:** Pandas, NumPy
-
--   **Deployment:** Vercel
-
-* * * * *
-
-API Endpoints
--------------
+The system is exposed via a **FastAPI backend**.
 
 ### Health Check
 
-`GET /health`
+**GET** /health
 
-**Response**
-
-`{
-  "status": "ok"
-}`
-
-* * * * *
+```bash
+{ "status": "ok" }   
+```
 
 ### Recommendation Endpoint
 
-`POST /recommend`
+**POST** /recommend
 
 **Request Body**
 
+```json
+   {    "query": "Content Writer required, expert in English and SEO."  }   
 ```
-{
-  "query": "Content Writer required, expert in English and SEO."
-}`
+
+> **Note:**In Swagger UI, the request body may appear as{ "additionalProp1": {} } due to generic schema rendering.The actual request expects a JSON object with a single query field.
 
 **Response**
 
-`{
-  "intent": {
-    "required_test_types": ["Knowledge & Skills", "Personality & Behavior"],
-    "max_duration_minutes": null
-  },
-  "recommendations": [
+```json
+{
+  "recommended_assessments": [
     {
-      "assessment_name": "...",
-      "assessment_url": "...",
-      "duration_minutes": 25,
-      "test_types": [...]
+      "name": "...",
+      "url": "...",
+      "description": "...",
+      "duration": 25,
+      "test_type": ["Knowledge & Skills"],
+      "adaptive_support": "Yes",
+      "remote_support": "Yes"
     }
   ]
 }
 ```
 
-* * * * *
-
 Evaluation Methodology
 ----------------------
 
--   **Metric:** Mean Recall@10 (as specified by SHL)
+*   **Metric:** Mean Recall@10 (as specified by SHL)
+    
+*   **Approach:**
+    
+    *   Labeled training queries used to tune retrieval depth and ranking
+        
+    *   Candidate pool retrieved via hybrid retrieval
+        
+    *   Final top-10 recommendations optimized to maximize ground-truth overlap
+        
 
--   **Approach:**
-
-    -   Queries from the labeled training dataset were used to tune retrieval depth and ranking logic
-
-    -   The system retrieves a candidate pool using vector similarity
-
-    -   Final recommendations are ranked and balanced to maximize the chance of matching ground truth URLs in the top 10
-
--   **Automation:**
-
-    -   An evaluation script generates a submission-ready CSV in the exact format required by SHL's automated scoring system
-
-* * * * *
-
-Submission CSV Format
----------------------
+### Submission CSV Format
 
 Generated automatically as:
 
+```bash  
+Query, Assessment_url 
+--------------------- 
+Query 1,Recommendation URL 1  
+Query 1,Recommendation URL 2   
 ```
-Query,Assessment_url
 
-Query 1,Recommendation URL 1
-
-Query 1,Recommendation URL 2
-```
-
-The CSV is produced using queries read directly from the provided Excel test set.
-
-* * * * *
+The CSV is produced directly from the provided Excel test set and is **submission-ready**.
 
 Project Structure
 -----------------
 
-```
+```bash
 ├── app
 │   ├── main.py              # FastAPI entrypoint
 │   ├── recommender.py       # Core RAG logic
@@ -219,43 +188,44 @@ Project Structure
 └── vercel.json
 ```
 
-* * * * *
-
 Deployment
 ----------
 
--   **Platform:** Vercel
+*   **Platform:** Vercel
+    
+*   **Root Directory:** /app
+    
+*   **Swagger UI:** [https://gen-ai-assessment-recommender.vercel.app/docs](https://gen-ai-assessment-recommender.vercel.app/docs)
+    
 
--   **Root Directory:** `/app`
+Running Locally
+---------------
 
--   **Web App URL:**
+Install dependencies:
 
-    `https://gen-ai-assessment-recommender.vercel.app/docs`
-
-Swagger UI is available at `/docs` for interactive testing.
-
-* * * * *
-
-How to Run Locally
-------------------
-
-```
-pip install -r requirements.txt
-uvicorn app.main:app --reload
+```bash
+   pip install -r requirements.txt   
 ```
 
-* * * * *
+Create environment file:
+
+```bash
+   cp .env.example .env   
+```
+
+Run the API:
+
+```bash
+   uvicorn app.main:app --reload   
+```
 
 Notes
 -----
 
--   The system avoids pre-packaged job solutions and focuses on individual assessments, aligned with SHL's labeled datasets.
-
--   Rate limits are handled through batching and controlled request frequency.
-
--   The pipeline is fully reproducible and automated.
-
-* * * * *
+*   Gemini rate limits are handled via key rotation
+    
+*   The full pipeline is reproducible and automated
+    
 
 Author
 ------
