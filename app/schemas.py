@@ -1,6 +1,5 @@
 from typing import Optional,List
-from pydantic import BaseModel
-
+from pydantic import BaseModel, Field
 
 class RecommendedAssessment(BaseModel):
     url: str
@@ -14,3 +13,11 @@ class RecommendedAssessment(BaseModel):
 
 class RecommendResponse(BaseModel):
     recommended_assessments: List[RecommendedAssessment]
+
+
+class HiringIntent(BaseModel):
+    skills: List[str] = Field(default_factory=list)
+    soft_skills: List[str] = Field(default_factory=list)
+    max_duration_minutes: Optional[int] = None
+    job_level: Optional[str] = None
+    required_test_types: List[str] = Field(default_factory=list)
