@@ -2,6 +2,20 @@ SHL-GenAI-Assessment-Recommender
 ================================
 
 A **GenAI-powered Assessment Recommendation System** that uses **Retrieval-Augmented Generation (RAG)** over SHL’s public product catalog to recommend the most relevant **SHL Individual Test Solutions** for a given hiring query or job description.
+## Evaluation Summary
+
+**Metric:** Mean Recall@10  
+**Result:** ~33.7%
+
+### **Interpretation**
+
+- The system is explicitly designed to recommend **SHL Individual Test Solutions** only.
+
+- The ground-truth dataset contains a large number of **pre-packaged job solutions and role-based bundles**, which are **out of scope** and cannot be retrieved as individual assessments.
+
+- To ensure consistent matching, assessment identity is **normalized using the stable slug** extracted after the `/view/` path, accounting for multiple SHL URL routes pointing to the same assessment.
+
+- Consequently, the reported **Recall@10** is primarily influenced by **ground-truth composition and scope mismatch**, rather than limitations in the system’s retrieval or ranking quality.
 
 Overview
 --------
